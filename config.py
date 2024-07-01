@@ -1,0 +1,4 @@
+# Constants and configuration variables
+DINE_IN_DEDUCTION_RATE = 0.95
+TAKEOUT_DEDUCTION_RATE = 0.85
+GRATUITY_DEDUCTION_RATE = 0.90
