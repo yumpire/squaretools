@@ -1,10 +1,14 @@
-def categorize_tips(transactions, debug=False):
+from team_fetcher import fetch_team_member_details
+
+def categorize_tips(transactions, square_client, debug=False):
     tips = {
         'gratuity': 0,
         'delivery': 0,
         'dinein': 0,
         'takeout': 0,
-    }
+        'team': {},
+        'other': 0
+    }    
     i = 1
     for transaction in transactions:
         if debug:
@@ -17,25 +21,35 @@ def categorize_tips(transactions, debug=False):
 
             # source_type tells us if it's direct or from a delivery app (EXTERNAL)
             source_type = transaction.get('source_type', '')
-            # if soure_type is EXTERNAL then skip the transaction as there are no tips involved
+            # if source_type is EXTERNAL then skip the transaction as there are no tips involved
             if source_type == 'EXTERNAL':
                 continue
 
-            # employee_id tells us if done online or dine in/walk0in
+            # employee_id tells us if done online or dine in/walk-in
             employee_id = transaction.get('employee_id', '')
+            if employee_id:
+                if employee_id not in tips['team']:
+                    team_member = fetch_team_member_details(square_client, employee_id, debug)
+                    print(team_member)
+                    if team_member:
+                        employee_name = f"{team_member.get('given_name', '')} {team_member.get('family_name', '')}".strip()
+                        tips['team'][employee_name] = 0
+                    else:
+                        tips['team'][employee_id] = 0
             # This is a placeholder logic. Adjust according to your actual data structure
             tip_money = transaction.get('tip_money', {})
             tip_amount = tip_money.get('amount', 0)
-            
-            # Placeholder categorization logic
-            source = transaction.get('external_details.source', '').upper()
             note = transaction.get('note', '').upper()
-            is_takeout = transaction.get('is_takeout', False)
 
             if employee_id:
+                if team_member:
+                    tips['team'][employee_name] += tip_amount
+                else:
+                    tips['team'][employee_id] += tip_amount
                 tips['dinein'] += tip_amount
             else:
                 tips['takeout'] += tip_amount
+                tips['other'] += tip_amount
 
             if 'GRATUITY' in note:
                 tips['gratuity'] += tip_amount

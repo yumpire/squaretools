@@ -7,6 +7,7 @@ from square_client import get_square_client
 from transaction_fetcher import get_transactions
 from tip_categorizer import categorize_tips
 from payout_calculator import calculate_payouts
+from team_fetcher import fetch_team_member_details
 from utils import parse_datetime, get_default_start_end
 
 def main():
@@ -34,6 +35,21 @@ def main():
     print(f"Dine-in/Walk-in Payout: ${payouts['dinein']/100:.2f}")
     print(f"Takeout/Delivery Payout: ${payouts['takeout']/100:.2f}")
     print(f"Gratuity Payout: ${payouts['gratuity']/100:.2f}")
+
+    # Debugging team details
+    team_details = {}
+    for employee_id, amount in tips['team'].items():
+        try:
+            team_member = fetch_team_member_details(square_client, employee_id, args.debug)  # Ensure this function returns the correct object
+            team_details[employee_id] = team_member.team
+        except AttributeError as e:
+            print(f"An error occurred while fetching team member details for employee_id {employee_id}: {e}")
+            team_details[employee_id] = None
+
+    print(f"Team: {team_details}")
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
