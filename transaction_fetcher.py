@@ -24,7 +24,7 @@ def get_transactions(square_client, start, end, debug=False):
                 begin_time=start_at,
                 end_time=end_at,
                 cursor=cursor,
-                limit=100
+                limit=200
             )
             if result.is_success():
                 new_transactions = result.body.get('payments', [])
